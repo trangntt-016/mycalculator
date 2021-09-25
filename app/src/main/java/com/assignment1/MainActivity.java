@@ -2,14 +2,11 @@ package com.assignment1;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
@@ -80,28 +77,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onClick(View view) {
         String idView = view.getResources().getResourceEntryName(view.getId());
 
         if(idView.equals("switchBtn")){
             this.shouldShowHistory = !this.shouldShowHistory;
-            this.calc.refresh();
+            // clear a list of history calculations
+            this.calc.clearHistory();
+            // set the history display to be blank
             displayWithHistory.setText(String.format("%s",""));
-            ViewUtils.updateBtn(this, this.switchBtn, this.shouldShowHistory);
-            return;
+            // change button color background, text based on user's click
+            updateBtn(this, this.switchBtn, this.shouldShowHistory);
+        }
+        else{
+            // get the number/operators from button clicked by users
+            String strToAdd = ((Button)view).getText().toString();
+
+            // push it to the list of history calculations
+            this.calc.push(strToAdd);
+
+            String displayString = this.calc.getCurrentCalculation(view);
+
+            // set current calculations to the upper default display
+            displayDefault.setText(String.format("%s",displayString));
+
+            // set calculations to the below history display if user clicks on "show History"
+            if (this.shouldShowHistory && ((Button) view).getText().equals("=")){
+                displayWithHistory.setText(String.format("%s", this.calc.getHistoryCalculations()));
+            }
         }
 
-        String strToAdd = ((Button)view).getText().toString();
+    }
 
-        this.calc.push(strToAdd);
-
-        String displayString = this.calc.getDefault(view);
-
-        displayDefault.setText(String.format("%s",displayString));
-
-        if(this.shouldShowHistory && ((Button) view).getText().equals("=")){
-            displayWithHistory.setText(String.format("%s",this.calc.getHistory()));
+    public void updateBtn(MainActivity main, TextView switchBtn, Boolean shouldShowHistory){
+        if(!shouldShowHistory){
+            switchBtn.setText("ADVANCE - WITH HISTORY");
+            switchBtn.setBackgroundResource(R.color.blue);
+            switchBtn.setTextColor(main.getResources().getColor(R.color.black));
+        }
+        else{
+            switchBtn.setText("STANDARD - NO HISTORY");
+            switchBtn.setBackgroundResource(R.color.deepblue);
+            switchBtn.setTextColor(main.getResources().getColor(R.color.white));
         }
 
     }
